@@ -35,13 +35,8 @@ jq '
     ueiNumber,
     yearFounded,
     tin,
-    contact: {
-      city: .companyContact.city,
-      stateCode: (.companyContact.state.name // null),
-      stateName: (.companyContact.state.description // null),
-      zipcode: .companyContact.zipcode,
-      country: (.companyContact.country.name // null)
-    }
+    companyContact,
+    companyPOC
   })
 ' "$CONTRACTORS_SRC" > "$OUT_DIR/contractors_index.json"
 

@@ -536,11 +536,11 @@ async function ensureContractorsRawLoaded() {
     return;
   }
 
-  const contractorsRaw = await loadJson("../data/dhs_contractors.json");
+  const contractorsRaw = await loadJson("./data/contractors_index.json");
   const contractorsByNormalizedName = new Map();
 
   contractorsRaw.forEach((row) => {
-    const key = normalizeCompanyName(row.name);
+    const key = row.normalizedCompanyName || normalizeCompanyName(row.name);
     if (!key) {
       return;
     }
@@ -650,7 +650,10 @@ async function renderCompanyModal(companyKey) {
   await ensureContractorsRawLoaded();
   const contractorRecords = appState.contractorsByNormalizedName.get(companyKey) || [];
   const primaryContractorRecord = contractorRecords[0] || null;
-  const primaryCompanyContact = contractorRecords.find((record) => record?.companyContact)?.companyContact || null;
+  const primaryCompanyContact =
+    contractorRecords.find((record) => record?.companyContact)?.companyContact ||
+    contractorRecords.find((record) => record?.contact)?.contact ||
+    null;
   const primaryCompanyPOC = contractorRecords.find((record) => record?.companyPOC)?.companyPOC || null;
   const companyUrl = primaryContractorRecord?.companyURL || null;
   const companyUrlHref = normalizeExternalUrl(companyUrl);
