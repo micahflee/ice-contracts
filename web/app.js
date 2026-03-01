@@ -73,6 +73,17 @@ const ui = {
   contractsTableBody: document.getElementById("contractsTableBody")
 };
 
+const defaultSortState = {
+  companies: {
+    key: "totalAward",
+    dir: "desc"
+  },
+  contracts: {
+    key: "awardAmount",
+    dir: "desc"
+  }
+};
+
 const appState = {
   contracts: [],
   contractorsRaw: null,
@@ -87,12 +98,12 @@ const appState = {
   },
   sort: {
     companies: {
-      key: "totalAward",
-      dir: "desc"
+      key: defaultSortState.companies.key,
+      dir: defaultSortState.companies.dir
     },
     contracts: {
-      key: "awardAmount",
-      dir: "desc"
+      key: defaultSortState.contracts.key,
+      dir: defaultSortState.contracts.dir
     }
   }
 };
@@ -423,6 +434,11 @@ function setSelectValueIfValid(selectElement, value) {
 function applyFilterInputsFromQuery() {
   const params = new URLSearchParams(window.location.search);
 
+  appState.sort.companies.key = defaultSortState.companies.key;
+  appState.sort.companies.dir = defaultSortState.companies.dir;
+  appState.sort.contracts.key = defaultSortState.contracts.key;
+  appState.sort.contracts.dir = defaultSortState.contracts.dir;
+
   ui.searchInput.value = params.get(queryKeys.search) || "";
   setSelectValueIfValid(ui.programFilter, params.get(queryKeys.program) || "");
   setSelectValueIfValid(ui.awardTypeFilter, params.get(queryKeys.awardType) || "");
@@ -482,10 +498,21 @@ function syncQueryFromFilterInputs() {
     }
   });
 
-  params.set(queryKeys.companySortKey, appState.sort.companies.key);
-  params.set(queryKeys.companySortDir, appState.sort.companies.dir);
-  params.set(queryKeys.contractSortKey, appState.sort.contracts.key);
-  params.set(queryKeys.contractSortDir, appState.sort.contracts.dir);
+  if (
+    appState.sort.companies.key !== defaultSortState.companies.key ||
+    appState.sort.companies.dir !== defaultSortState.companies.dir
+  ) {
+    params.set(queryKeys.companySortKey, appState.sort.companies.key);
+    params.set(queryKeys.companySortDir, appState.sort.companies.dir);
+  }
+
+  if (
+    appState.sort.contracts.key !== defaultSortState.contracts.key ||
+    appState.sort.contracts.dir !== defaultSortState.contracts.dir
+  ) {
+    params.set(queryKeys.contractSortKey, appState.sort.contracts.key);
+    params.set(queryKeys.contractSortDir, appState.sort.contracts.dir);
+  }
 
   if (appState.modal.type === "company" && appState.modal.companyKey) {
     params.set(queryKeys.modalType, "company");
