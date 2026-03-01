@@ -71,7 +71,91 @@ const appState = {
   contracts: [],
   summaryMetrics: null,
   map: null,
-  mapLayerGroup: null
+  mapLayerGroup: null,
+  sort: {
+    companies: {
+      key: "totalAward",
+      dir: "desc"
+    },
+    contracts: {
+      key: "awardAmount",
+      dir: "desc"
+    }
+  }
+};
+
+const queryKeys = {
+  search: "search",
+  program: "program",
+  awardType: "awardType",
+  phaseType: "phaseType",
+  state: "state",
+  minYear: "minYear",
+  maxYear: "maxYear",
+  minAward: "minAward",
+  companySortKey: "companySortKey",
+  companySortDir: "companySortDir",
+  contractSortKey: "contractSortKey",
+  contractSortDir: "contractSortDir"
+};
+
+const sortConfig = {
+  companies: {
+    companyName: {
+      defaultDir: "asc",
+      getter: (row) => row.companyName || ""
+    },
+    contractCount: {
+      defaultDir: "desc",
+      getter: (row) => Number(row.contractCount || 0)
+    },
+    totalAward: {
+      defaultDir: "desc",
+      getter: (row) => Number(row.totalAward || 0)
+    },
+    totalObligation: {
+      defaultDir: "desc",
+      getter: (row) => Number(row.totalObligation || 0)
+    }
+  },
+  contracts: {
+    awardId: {
+      defaultDir: "desc",
+      getter: (row) => Number(row.awardId || 0)
+    },
+    companyName: {
+      defaultDir: "asc",
+      getter: (row) => row.companyName || ""
+    },
+    programName: {
+      defaultDir: "asc",
+      getter: (row) => row.programName || ""
+    },
+    phaseType: {
+      defaultDir: "asc",
+      getter: (row) => row.phaseTypeDesc || row.phaseType || ""
+    },
+    awardType: {
+      defaultDir: "asc",
+      getter: (row) => row.awardTypeDesc || row.awardType || ""
+    },
+    popStartDate: {
+      defaultDir: "desc",
+      getter: (row) => row.popStartDate || ""
+    },
+    popEndDate: {
+      defaultDir: "desc",
+      getter: (row) => row.popEndDate || ""
+    },
+    awardAmount: {
+      defaultDir: "desc",
+      getter: (row) => Number(row.awardAmount || 0)
+    },
+    state: {
+      defaultDir: "asc",
+      getter: (row) => row.companyStateCd || ""
+    }
+  }
 };
 
 const numberFormatter = new Intl.NumberFormat("en-US");
@@ -103,6 +187,95 @@ function safeNumber(value) {
   return numberFormatter.format(Number.isFinite(numeric) ? numeric : 0);
 }
 
+function isValidSortKey(table, key) {
+  return Boolean(sortConfig[table] && sortConfig[table][key]);
+}
+
+function normalizeSortDir(dir) {
+  return dir === "asc" ? "asc" : "desc";
+}
+
+function compareValues(a, b) {
+  if (typeof a === "number" && typeof b === "number") {
+    return a - b;
+  }
+
+  return String(a).localeCompare(String(b), undefined, { sensitivity: "base" });
+}
+
+function sortRows(rows, table) {
+  const { key, dir } = appState.sort[table];
+  const getter = sortConfig[table][key].getter;
+
+  const sortedRows = [...rows].sort((left, right) => {
+    const leftValue = getter(left);
+    const rightValue = getter(right);
+    const baseComparison = compareValues(leftValue, rightValue);
+    return dir === "asc" ? baseComparison : -baseComparison;
+  });
+
+  return sortedRows;
+}
+
+function setSort(table, key) {
+  if (!isValidSortKey(table, key)) {
+    return;
+  }
+
+  const current = appState.sort[table];
+  const defaultDir = sortConfig[table][key].defaultDir;
+
+  if (current.key === key) {
+    current.dir = current.dir === "asc" ? "desc" : "asc";
+  } else {
+    current.key = key;
+    current.dir = defaultDir;
+  }
+}
+
+function updateSortHeaderIndicators() {
+  const headers = document.querySelectorAll("th[data-table][data-sort-key]");
+
+  headers.forEach((header) => {
+    const table = header.dataset.table;
+    const key = header.dataset.sortKey;
+    const baseLabel = header.dataset.label || header.textContent || "";
+    const isActive = appState.sort[table].key === key;
+    const dir = appState.sort[table].dir;
+
+    header.textContent = `${baseLabel}${isActive ? (dir === "asc" ? " ↑" : " ↓") : ""}`;
+    header.setAttribute("aria-sort", isActive ? (dir === "asc" ? "ascending" : "descending") : "none");
+  });
+}
+
+function initializeSortableHeaders() {
+  const headers = document.querySelectorAll("th[data-table][data-sort-key]");
+
+  headers.forEach((header) => {
+    const table = header.dataset.table;
+    const key = header.dataset.sortKey;
+
+    header.classList.add("sortable");
+    header.setAttribute("role", "button");
+    header.tabIndex = 0;
+
+    header.addEventListener("click", () => {
+      setSort(table, key);
+      render();
+    });
+
+    header.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        setSort(table, key);
+        render();
+      }
+    });
+  });
+
+  updateSortHeaderIndicators();
+}
+
 function populateSelect(selectEl, values) {
   const options = values
     .filter((value) => value !== null && value !== undefined && value !== "")
@@ -131,8 +304,10 @@ function initMap() {
 }
 
 function getFilterValues() {
+  const searchRaw = ui.searchInput.value.trim();
+
   return {
-    search: ui.searchInput.value.trim().toLowerCase(),
+    search: searchRaw.toLowerCase(),
     program: ui.programFilter.value,
     awardType: ui.awardTypeFilter.value,
     phaseType: ui.phaseTypeFilter.value,
@@ -141,6 +316,89 @@ function getFilterValues() {
     maxYear: ui.maxYearFilter.value ? Number(ui.maxYearFilter.value) : null,
     minAward: ui.minAwardFilter.value ? Number(ui.minAwardFilter.value) : null
   };
+}
+
+function getRawFilterInputValues() {
+  return {
+    search: ui.searchInput.value.trim(),
+    program: ui.programFilter.value,
+    awardType: ui.awardTypeFilter.value,
+    phaseType: ui.phaseTypeFilter.value,
+    state: ui.stateFilter.value,
+    minYear: ui.minYearFilter.value,
+    maxYear: ui.maxYearFilter.value,
+    minAward: ui.minAwardFilter.value
+  };
+}
+
+function setSelectValueIfValid(selectElement, value) {
+  if (!value) {
+    selectElement.value = "";
+    return;
+  }
+
+  const hasOption = Array.from(selectElement.options).some((option) => option.value === value);
+  selectElement.value = hasOption ? value : "";
+}
+
+function applyFilterInputsFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+
+  ui.searchInput.value = params.get(queryKeys.search) || "";
+  setSelectValueIfValid(ui.programFilter, params.get(queryKeys.program) || "");
+  setSelectValueIfValid(ui.awardTypeFilter, params.get(queryKeys.awardType) || "");
+  setSelectValueIfValid(ui.phaseTypeFilter, params.get(queryKeys.phaseType) || "");
+  setSelectValueIfValid(ui.stateFilter, params.get(queryKeys.state) || "");
+
+  const minYear = params.get(queryKeys.minYear) || "";
+  const maxYear = params.get(queryKeys.maxYear) || "";
+  const minAward = params.get(queryKeys.minAward) || "";
+
+  ui.minYearFilter.value = /^\d{4}$/.test(minYear) ? minYear : "";
+  ui.maxYearFilter.value = /^\d{4}$/.test(maxYear) ? maxYear : "";
+  ui.minAwardFilter.value = /^\d+(\.\d+)?$/.test(minAward) ? minAward : "";
+
+  const companySortKey = params.get(queryKeys.companySortKey);
+  const companySortDir = params.get(queryKeys.companySortDir);
+  if (companySortKey && isValidSortKey("companies", companySortKey)) {
+    appState.sort.companies.key = companySortKey;
+  }
+  if (companySortDir) {
+    appState.sort.companies.dir = normalizeSortDir(companySortDir);
+  }
+
+  const contractSortKey = params.get(queryKeys.contractSortKey);
+  const contractSortDir = params.get(queryKeys.contractSortDir);
+  if (contractSortKey && isValidSortKey("contracts", contractSortKey)) {
+    appState.sort.contracts.key = contractSortKey;
+  }
+  if (contractSortDir) {
+    appState.sort.contracts.dir = normalizeSortDir(contractSortDir);
+  }
+}
+
+function syncQueryFromFilterInputs() {
+  const rawValues = getRawFilterInputValues();
+  const params = new URLSearchParams();
+
+  Object.entries(rawValues).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && String(value).trim() !== "") {
+      params.set(queryKeys[key], String(value));
+    }
+  });
+
+  params.set(queryKeys.companySortKey, appState.sort.companies.key);
+  params.set(queryKeys.companySortDir, appState.sort.companies.dir);
+  params.set(queryKeys.contractSortKey, appState.sort.contracts.key);
+  params.set(queryKeys.contractSortDir, appState.sort.contracts.dir);
+
+  const nextQuery = params.toString();
+  const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash}`;
+  const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+  if (nextUrl !== currentUrl) {
+    window.history.replaceState({}, "", nextUrl);
+  }
 }
 
 function buildSearchText(contract) {
@@ -279,7 +537,8 @@ function renderMetrics(filteredContracts, companies, states) {
 }
 
 function renderCompaniesTable(companies) {
-  const rows = companies.slice(0, 100).map(
+  const sortedCompanies = sortRows(companies, "companies");
+  const rows = sortedCompanies.slice(0, 100).map(
     (company) => `
       <tr>
         <td>${company.companyName}</td>
@@ -294,7 +553,8 @@ function renderCompaniesTable(companies) {
 }
 
 function renderContractsTable(contracts) {
-  const rows = contracts.slice(0, 250).map(
+  const sortedContracts = sortRows(contracts, "contracts");
+  const rows = sortedContracts.slice(0, 250).map(
     (contract) => `
       <tr>
         <td>${contract.awardId}</td>
@@ -348,6 +608,8 @@ function renderMap(stateRows) {
 }
 
 function render() {
+  syncQueryFromFilterInputs();
+
   const filters = getFilterValues();
   const filteredContracts = appState.contracts.filter((contract) => contractMatches(contract, filters));
   const companies = aggregateCompanies(filteredContracts);
@@ -357,6 +619,7 @@ function render() {
   renderCompaniesTable(companies);
   renderContractsTable(filteredContracts);
   renderMap(states);
+  updateSortHeaderIndicators();
 }
 
 function wireEvents() {
@@ -387,6 +650,11 @@ function wireEvents() {
     ui.minYearFilter.value = "";
     ui.maxYearFilter.value = "";
     ui.minAwardFilter.value = "";
+    render();
+  });
+
+  window.addEventListener("popstate", () => {
+    applyFilterInputsFromQuery();
     render();
   });
 }
@@ -429,6 +697,8 @@ async function init() {
     appState.summaryMetrics = summaryMetrics;
 
     initFiltersFromData(contracts);
+    applyFilterInputsFromQuery();
+    initializeSortableHeaders();
     initMap();
     wireEvents();
     render();

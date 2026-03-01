@@ -87,10 +87,10 @@
             <table>
               <thead>
                 <tr>
-                  <th>Company</th>
-                  <th>Contracts</th>
-                  <th>Total Award</th>
-                  <th>Total Obligation</th>
+                  <th data-table="companies" data-sort-key="companyName" data-label="Company">Company</th>
+                  <th data-table="companies" data-sort-key="contractCount" data-label="Contracts">Contracts</th>
+                  <th data-table="companies" data-sort-key="totalAward" data-label="Total Award">Total Award</th>
+                  <th data-table="companies" data-sort-key="totalObligation" data-label="Total Obligation">Total Obligation</th>
                 </tr>
               </thead>
               <tbody id="companiesTableBody"></tbody>
@@ -106,15 +106,15 @@
             <table>
               <thead>
                 <tr>
-                  <th>Award ID</th>
-                  <th>Company</th>
-                  <th>Program</th>
-                  <th>Phase</th>
-                  <th>Award Type</th>
-                  <th>Start</th>
-                  <th>End</th>
-                  <th>Award</th>
-                  <th>State</th>
+                  <th data-table="contracts" data-sort-key="awardId" data-label="Award ID">Award ID</th>
+                  <th data-table="contracts" data-sort-key="companyName" data-label="Company">Company</th>
+                  <th data-table="contracts" data-sort-key="programName" data-label="Program">Program</th>
+                  <th data-table="contracts" data-sort-key="phaseType" data-label="Phase">Phase</th>
+                  <th data-table="contracts" data-sort-key="awardType" data-label="Award Type">Award Type</th>
+                  <th data-table="contracts" data-sort-key="popStartDate" data-label="Start">Start</th>
+                  <th data-table="contracts" data-sort-key="popEndDate" data-label="End">End</th>
+                  <th data-table="contracts" data-sort-key="awardAmount" data-label="Award">Award</th>
+                  <th data-table="contracts" data-sort-key="state" data-label="State">State</th>
                 </tr>
               </thead>
               <tbody id="contractsTableBody"></tbody>
