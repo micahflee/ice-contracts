@@ -62,6 +62,10 @@ const ui = {
   maxYearFilter: document.getElementById("maxYearFilter"),
   minAwardFilter: document.getElementById("minAwardFilter"),
   resetFiltersBtn: document.getElementById("resetFiltersBtn"),
+  detailModal: document.getElementById("detailModal"),
+  detailModalTitle: document.getElementById("detailModalTitle"),
+  detailModalBody: document.getElementById("detailModalBody"),
+  closeModalBtn: document.getElementById("closeModalBtn"),
   metricsPanel: document.getElementById("metricsPanel"),
   companiesFilterSummary: document.getElementById("companiesFilterSummary"),
   contractsFilterSummary: document.getElementById("contractsFilterSummary"),
@@ -71,9 +75,16 @@ const ui = {
 
 const appState = {
   contracts: [],
+  contractorsRaw: null,
+  contractorsByNormalizedName: null,
   summaryMetrics: null,
   map: null,
   mapLayerGroup: null,
+  modal: {
+    type: null,
+    companyKey: null,
+    awardId: null
+  },
   sort: {
     companies: {
       key: "totalAward",
@@ -98,7 +109,10 @@ const queryKeys = {
   companySortKey: "companySortKey",
   companySortDir: "companySortDir",
   contractSortKey: "contractSortKey",
-  contractSortDir: "contractSortDir"
+  contractSortDir: "contractSortDir",
+  modalType: "modalType",
+  modalCompany: "modalCompany",
+  modalAwardId: "modalAwardId"
 };
 
 const sortConfig = {
@@ -187,6 +201,69 @@ function compactMoney(value) {
 function safeNumber(value) {
   const numeric = Number(value ?? 0);
   return numberFormatter.format(Number.isFinite(numeric) ? numeric : 0);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function normalizeCompanyName(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function normalizeExternalUrl(value) {
+  const trimmed = String(value || "").trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (trimmed.startsWith("//")) {
+    return `https:${trimmed}`;
+  }
+
+  return `https://${trimmed}`;
+}
+
+function formatDetailValue(value) {
+  if (value === null || value === undefined || value === "") {
+    return "—";
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : "—";
+  }
+
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  return String(value);
+}
+
+function renderDetailGrid(entries) {
+  return `
+    <div class="detail-grid">
+      ${entries
+        .map(
+          ({ key, value }) =>
+            `<div class="detail-item"><div class="detail-key">${escapeHtml(key)}</div><div class="detail-value">${escapeHtml(
+              formatDetailValue(value)
+            )}</div></div>`
+        )
+        .join("")}
+    </div>
+  `;
 }
 
 function isValidSortKey(table, key) {
@@ -377,6 +454,22 @@ function applyFilterInputsFromQuery() {
   if (contractSortDir) {
     appState.sort.contracts.dir = normalizeSortDir(contractSortDir);
   }
+
+  const modalType = params.get(queryKeys.modalType);
+  const modalCompany = params.get(queryKeys.modalCompany);
+  const modalAwardId = params.get(queryKeys.modalAwardId);
+
+  appState.modal.type = null;
+  appState.modal.companyKey = null;
+  appState.modal.awardId = null;
+
+  if (modalType === "company" && modalCompany) {
+    appState.modal.type = "company";
+    appState.modal.companyKey = modalCompany;
+  } else if (modalType === "contract" && modalAwardId && /^\d+$/.test(modalAwardId)) {
+    appState.modal.type = "contract";
+    appState.modal.awardId = Number(modalAwardId);
+  }
 }
 
 function syncQueryFromFilterInputs() {
@@ -394,6 +487,14 @@ function syncQueryFromFilterInputs() {
   params.set(queryKeys.contractSortKey, appState.sort.contracts.key);
   params.set(queryKeys.contractSortDir, appState.sort.contracts.dir);
 
+  if (appState.modal.type === "company" && appState.modal.companyKey) {
+    params.set(queryKeys.modalType, "company");
+    params.set(queryKeys.modalCompany, appState.modal.companyKey);
+  } else if (appState.modal.type === "contract" && appState.modal.awardId !== null) {
+    params.set(queryKeys.modalType, "contract");
+    params.set(queryKeys.modalAwardId, String(appState.modal.awardId));
+  }
+
   const nextQuery = params.toString();
   const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash}`;
   const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
@@ -401,6 +502,283 @@ function syncQueryFromFilterInputs() {
   if (nextUrl !== currentUrl) {
     window.history.replaceState({}, "", nextUrl);
   }
+}
+
+async function ensureContractorsRawLoaded() {
+  if (appState.contractorsRaw && appState.contractorsByNormalizedName) {
+    return;
+  }
+
+  const contractorsRaw = await loadJson("../data/dhs_contractors.json");
+  const contractorsByNormalizedName = new Map();
+
+  contractorsRaw.forEach((row) => {
+    const key = normalizeCompanyName(row.name);
+    if (!key) {
+      return;
+    }
+
+    if (!contractorsByNormalizedName.has(key)) {
+      contractorsByNormalizedName.set(key, []);
+    }
+
+    contractorsByNormalizedName.get(key).push(row);
+  });
+
+  appState.contractorsRaw = contractorsRaw;
+  appState.contractorsByNormalizedName = contractorsByNormalizedName;
+}
+
+function openCompanyModalByKey(companyKey) {
+  if (!companyKey) {
+    return;
+  }
+
+  appState.modal.type = "company";
+  appState.modal.companyKey = companyKey;
+  appState.modal.awardId = null;
+  render();
+}
+
+function openContractModalByAwardId(awardId) {
+  const parsedAwardId = Number(awardId);
+  if (!Number.isFinite(parsedAwardId)) {
+    return;
+  }
+
+  appState.modal.type = "contract";
+  appState.modal.awardId = parsedAwardId;
+  appState.modal.companyKey = null;
+  render();
+}
+
+function closeDetailModal() {
+  if (!appState.modal.type) {
+    return;
+  }
+
+  appState.modal.type = null;
+  appState.modal.companyKey = null;
+  appState.modal.awardId = null;
+  render();
+}
+
+function showModal(title, bodyHtml) {
+  ui.detailModalTitle.textContent = title;
+  ui.detailModalBody.innerHTML = bodyHtml;
+  ui.detailModal.classList.remove("hidden");
+  ui.detailModal.setAttribute("aria-hidden", "false");
+}
+
+function hideModal() {
+  ui.detailModal.classList.add("hidden");
+  ui.detailModal.setAttribute("aria-hidden", "true");
+  ui.detailModalBody.innerHTML = "";
+}
+
+function renderCompanyContractsTable(companyContracts) {
+  const rows = companyContracts
+    .map(
+      (contract) => `
+        <tr>
+          <td><button class="link-button" type="button" data-open-contract="${contract.awardId}">${escapeHtml(contract.awardId)}</button></td>
+          <td>${escapeHtml(contract.programName || "")}</td>
+          <td>${escapeHtml(contract.phaseTypeDesc || contract.phaseType || "")}</td>
+          <td>${escapeHtml(contract.awardTypeDesc || contract.awardType || "")}</td>
+          <td>${escapeHtml(contract.popStartDate || "")}</td>
+          <td>${escapeHtml(contract.popEndDate || "")}</td>
+          <td>${escapeHtml(safeMoney(contract.awardAmount || 0))}</td>
+        </tr>
+      `
+    )
+    .join("");
+
+  return `
+    <div class="inline-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Award ID</th>
+            <th>Program</th>
+            <th>Phase</th>
+            <th>Award Type</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Award</th>
+          </tr>
+        </thead>
+        <tbody>${rows || '<tr><td colspan="7">No contracts found.</td></tr>'}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function renderCompanyModal(companyKey) {
+  const contractsForCompany = appState.contracts
+    .filter((contract) => contract.normalizedCompanyName === companyKey)
+    .sort((a, b) => Number(b.awardAmount || 0) - Number(a.awardAmount || 0));
+
+  await ensureContractorsRawLoaded();
+  const contractorRecords = appState.contractorsByNormalizedName.get(companyKey) || [];
+  const primaryContractorRecord = contractorRecords[0] || null;
+  const primaryCompanyContact = contractorRecords.find((record) => record?.companyContact)?.companyContact || null;
+  const primaryCompanyPOC = contractorRecords.find((record) => record?.companyPOC)?.companyPOC || null;
+  const companyUrl = primaryContractorRecord?.companyURL || null;
+  const companyUrlHref = normalizeExternalUrl(companyUrl);
+  const displayName =
+    contractsForCompany[0]?.companyName || contractorRecords[0]?.name || companyKey || "Unknown Company";
+
+  const totalAward = contractsForCompany.reduce((sum, item) => sum + Number(item.awardAmount || 0), 0);
+  const totalObligation = contractsForCompany.reduce((sum, item) => sum + Number(item.currentObligationAmount || 0), 0);
+
+  const bodyHtml = `
+    <h3 class="modal-section-title">Company Summary</h3>
+    ${renderDetailGrid([
+      { key: "Company Name", value: displayName },
+      { key: "Normalized Key", value: companyKey },
+      { key: "Matched Contractor Records", value: contractorRecords.length },
+      { key: "Awarded Contracts", value: contractsForCompany.length },
+      { key: "Total Award", value: safeMoney(totalAward) },
+      { key: "Total Obligation", value: safeMoney(totalObligation) }
+    ])}
+
+    ${
+      companyUrlHref
+        ? `<h3 class="modal-section-title">Company URL</h3>
+    <p class="detail-value"><a href="${escapeHtml(companyUrlHref)}" target="_blank" rel="noreferrer noopener" referrerpolicy="no-referrer">${escapeHtml(
+            companyUrl
+          )}</a></p>`
+        : ""
+    }
+
+    <h3 class="modal-section-title">Company Contact</h3>
+    ${
+      primaryCompanyContact
+        ? renderDetailGrid([
+            { key: "Name", value: [primaryCompanyContact.firstName, primaryCompanyContact.middleName, primaryCompanyContact.lastName].filter(Boolean).join(" ") },
+            { key: "Title", value: primaryCompanyContact.title },
+            { key: "Email", value: primaryCompanyContact.email },
+            { key: "Phone", value: primaryCompanyContact.phoneNumber },
+            { key: "Address 1", value: primaryCompanyContact.addressOne },
+            { key: "Address 2", value: primaryCompanyContact.addressTwo },
+            { key: "City", value: primaryCompanyContact.city },
+            { key: "State", value: primaryCompanyContact.state?.name || primaryCompanyContact.state?.description },
+            { key: "Zipcode", value: primaryCompanyContact.zipcode },
+            { key: "Country", value: primaryCompanyContact.country?.name || primaryCompanyContact.country?.description }
+          ])
+        : '<p class="detail-value">No companyContact data available.</p>'
+    }
+
+    <h3 class="modal-section-title">Company POC</h3>
+    ${
+      primaryCompanyPOC
+        ? renderDetailGrid([
+            { key: "Name", value: [primaryCompanyPOC.firstName, primaryCompanyPOC.middleName, primaryCompanyPOC.lastName].filter(Boolean).join(" ") },
+            { key: "Title", value: primaryCompanyPOC.title },
+            { key: "Email", value: primaryCompanyPOC.email },
+            { key: "Phone", value: primaryCompanyPOC.phoneNumber },
+            { key: "Address 1", value: primaryCompanyPOC.addressOne },
+            { key: "Address 2", value: primaryCompanyPOC.addressTwo },
+            { key: "City", value: primaryCompanyPOC.city },
+            { key: "State", value: primaryCompanyPOC.state?.name || primaryCompanyPOC.state?.description },
+            { key: "Zipcode", value: primaryCompanyPOC.zipcode },
+            { key: "Country", value: primaryCompanyPOC.country?.name || primaryCompanyPOC.country?.description }
+          ])
+        : '<p class="detail-value">No companyPOC data available.</p>'
+    }
+
+    <h3 class="modal-section-title">Contracts Awarded</h3>
+    ${renderCompanyContractsTable(contractsForCompany)}
+
+    <h3 class="modal-section-title">All Matched Contractor Record Data</h3>
+    ${
+      contractorRecords.length
+        ? contractorRecords
+            .map(
+              (record, idx) =>
+                `<h4 class="modal-section-title">Contractor Record ${idx + 1}</h4><pre class="json-block">${escapeHtml(
+                  JSON.stringify(record, null, 2)
+                )}</pre>`
+            )
+            .join("")
+        : '<p class="detail-value">No exact contractor record matched this company key.</p>'
+    }
+  `;
+
+  showModal(`Company Detail: ${displayName}`, bodyHtml);
+}
+
+function renderContractModal(awardId) {
+  const contract = appState.contracts.find((row) => Number(row.awardId) === Number(awardId));
+  if (!contract) {
+    closeDetailModal();
+    return;
+  }
+
+  const companyKey = contract.normalizedCompanyName || normalizeCompanyName(contract.companyName);
+  const bodyHtml = `
+    <h3 class="modal-section-title">Contract Summary</h3>
+    ${renderDetailGrid([
+      { key: "Award ID", value: contract.awardId },
+      { key: "Company", value: contract.companyName },
+      { key: "Program", value: contract.programName },
+      { key: "Phase", value: contract.phaseTypeDesc || contract.phaseType },
+      { key: "Award Type", value: contract.awardTypeDesc || contract.awardType },
+      { key: "Start Date", value: contract.popStartDate },
+      { key: "End Date", value: contract.popEndDate },
+      { key: "Award Amount", value: safeMoney(contract.awardAmount || 0) },
+      { key: "Current Obligation", value: safeMoney(contract.currentObligationAmount || 0) }
+    ])}
+
+    <h3 class="modal-section-title">Proposal Abstract</h3>
+    <p class="detail-value">${escapeHtml(contract.proposalAbstract || "No proposal abstract available.")}</p>
+
+    <h3 class="modal-section-title">Company Contact</h3>
+    ${renderDetailGrid([
+      { key: "Contact Name", value: contract.companyContactName },
+      { key: "Contact Title", value: contract.companyContactTitle },
+      { key: "Company Name", value: contract.companyName },
+      { key: "Address", value: contract.companyAddress },
+      { key: "City", value: contract.companyCity },
+      { key: "State", value: contract.companyState || contract.companyStateCd },
+      { key: "Zipcode", value: contract.companyZipCode }
+    ])}
+
+    <p>
+      <button class="link-button" type="button" data-open-company="${escapeHtml(companyKey)}">Open company detail: ${escapeHtml(
+    contract.companyName || "Unknown"
+  )}</button>
+    </p>
+
+    <h3 class="modal-section-title">All Contract Field Data</h3>
+    <pre class="json-block">${escapeHtml(JSON.stringify(contract, null, 2))}</pre>
+  `;
+
+  showModal(`Contract Detail: Award ${contract.awardId}`, bodyHtml);
+}
+
+function renderDetailModal() {
+  if (!appState.modal.type) {
+    hideModal();
+    return;
+  }
+
+  if (appState.modal.type === "company" && appState.modal.companyKey) {
+    renderCompanyModal(appState.modal.companyKey).catch((error) => {
+      showModal(
+        "Company Detail",
+        `<p class="detail-value">Failed to load company detail: ${escapeHtml(error.message || String(error))}</p>`
+      );
+    });
+    return;
+  }
+
+  if (appState.modal.type === "contract" && appState.modal.awardId !== null) {
+    renderContractModal(appState.modal.awardId);
+    return;
+  }
+
+  hideModal();
 }
 
 function buildSearchText(contract) {
@@ -591,7 +969,9 @@ function renderCompaniesTable(companies) {
   const rows = sortedCompanies.map(
     (company) => `
       <tr>
-        <td>${company.companyName}</td>
+        <td><button class="link-button" type="button" data-open-company="${escapeHtml(
+          normalizeCompanyName(company.companyName)
+        )}">${escapeHtml(company.companyName)}</button></td>
         <td>${safeNumber(company.contractCount)}</td>
         <td>${safeMoney(company.totalAward)}</td>
         <td>${safeMoney(company.totalObligation)}</td>
@@ -607,8 +987,12 @@ function renderContractsTable(contracts) {
   const rows = sortedContracts.slice(0, 250).map(
     (contract) => `
       <tr>
-        <td>${contract.awardId}</td>
-        <td>${contract.companyName}</td>
+        <td><button class="link-button" type="button" data-open-contract="${escapeHtml(contract.awardId)}">${escapeHtml(
+          contract.awardId
+        )}</button></td>
+        <td><button class="link-button" type="button" data-open-company="${escapeHtml(
+          contract.normalizedCompanyName || normalizeCompanyName(contract.companyName)
+        )}">${escapeHtml(contract.companyName)}</button></td>
         <td>${contract.programName || ""}</td>
         <td>${contract.phaseTypeDesc || contract.phaseType || ""}</td>
         <td>${contract.awardTypeDesc || contract.awardType || ""}</td>
@@ -676,6 +1060,7 @@ function render() {
   renderContractsTable(filteredContracts);
   renderMap(states);
   updateSortHeaderIndicators();
+  renderDetailModal();
 }
 
 function wireEvents() {
@@ -696,6 +1081,55 @@ function wireEvents() {
   ui.minYearFilter.addEventListener("input", render);
   ui.maxYearFilter.addEventListener("input", render);
   ui.minAwardFilter.addEventListener("input", render);
+
+  ui.companiesTableBody.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-open-company]");
+    if (!button) {
+      return;
+    }
+
+    const companyKey = button.getAttribute("data-open-company");
+    openCompanyModalByKey(companyKey);
+  });
+
+  ui.contractsTableBody.addEventListener("click", (event) => {
+    const contractButton = event.target.closest("[data-open-contract]");
+    if (contractButton) {
+      openContractModalByAwardId(contractButton.getAttribute("data-open-contract"));
+      return;
+    }
+
+    const companyButton = event.target.closest("[data-open-company]");
+    if (companyButton) {
+      openCompanyModalByKey(companyButton.getAttribute("data-open-company"));
+    }
+  });
+
+  ui.detailModalBody.addEventListener("click", (event) => {
+    const contractButton = event.target.closest("[data-open-contract]");
+    if (contractButton) {
+      openContractModalByAwardId(contractButton.getAttribute("data-open-contract"));
+      return;
+    }
+
+    const companyButton = event.target.closest("[data-open-company]");
+    if (companyButton) {
+      openCompanyModalByKey(companyButton.getAttribute("data-open-company"));
+    }
+  });
+
+  ui.closeModalBtn.addEventListener("click", closeDetailModal);
+  ui.detailModal.addEventListener("click", (event) => {
+    if (event.target.matches("[data-close-modal='true']")) {
+      closeDetailModal();
+    }
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && appState.modal.type) {
+      closeDetailModal();
+    }
+  });
 
   ui.resetFiltersBtn.addEventListener("click", () => {
     ui.searchInput.value = "";

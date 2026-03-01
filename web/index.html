@@ -126,6 +126,17 @@
       </section>
     </main>
 
+    <div id="detailModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal="true"></div>
+      <section class="modal-content" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
+        <header class="modal-header">
+          <h2 id="detailModalTitle">Details</h2>
+          <button id="closeModalBtn" class="modal-close-btn" type="button" aria-label="Close detail view">×</button>
+        </header>
+        <div id="detailModalBody" class="modal-body"></div>
+      </section>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="./app.js"></script>
   </body>
