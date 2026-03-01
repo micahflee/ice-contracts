@@ -1,0 +1,50 @@
+I'm disclosing a list containing the details of 6,681 organizations that applied for contracts with the US Department of Homeland Security.
+This data was taken from the Office of Industry Partnership at https://oip.dhs.gov.
+
+Why hack the DHS? I can think of a couple Pretti Good reasons!
+I'm releasing this because the DHS is killing us and people deserve to know which companies support them and what they're working on.
+
+This data includes:
+• Company names
+• Company URLs
+• Names of various employees and sometimes their titles
+• Business and potentially personal addresses
+• Employee phone numbers
+• Employee email addresses
+• Tax identification numbers, including employer identification numbers and potentially SSNs
+• Other government contractor IDs, such as UEI numbers and CAGE codes
+• Some internal comments by DHS staff regarding things like updates to the information above
+
+Examples of companies in the list:
+• Palantir
+• Anduril
+• Microsoft
+• Raytheon
+• Oracle
+• L3Harris
+• HBGary
+
+Additionally, I've included a second list containing information on which of these companies won contracts and what those contracts were for.
+The information in this second list may be less sensitive, but it doesn't appear in the public section of https://oip.dhs.gov as far as I could tell.
+I've included the second list for reference and comparison to the first. Both are likely incomplete.
+
+There are some entities in this list that I take no issue with, such as NASA, the various universities, water safety organizations, etc.
+However, people deserve to know about them, too, and these entities likewise deserve to know that they're part of the breach.
+Furthermore, there are also details from government agencies, including the FBI and the DHS itself.
+What you do with this data is entirely up to you. Thanks for checking this out!
+
+To the DHS:
+You are neither increasing the security of our homeland nor are you secure yourselves.
+How does it feel to be hunted?
+
+To the contractors:
+You wage war just to make a buck. I do this for free.
+How does it feel to be spied on?
+
+To everyone else, thanks for reading and good luck.
+
+- Department of Peace
+
+
+Email: oaqeitbfqxczhe8yle57@proton.me
+GPG: See department_of_peace.pub.asc
