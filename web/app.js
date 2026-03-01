@@ -63,6 +63,8 @@ const ui = {
   minAwardFilter: document.getElementById("minAwardFilter"),
   resetFiltersBtn: document.getElementById("resetFiltersBtn"),
   metricsPanel: document.getElementById("metricsPanel"),
+  companiesFilterSummary: document.getElementById("companiesFilterSummary"),
+  contractsFilterSummary: document.getElementById("contractsFilterSummary"),
   companiesTableBody: document.getElementById("companiesTableBody"),
   contractsTableBody: document.getElementById("contractsTableBody")
 };
@@ -452,6 +454,54 @@ function contractMatches(contract, filters) {
   return true;
 }
 
+function buildHumanReadableFilterSummary(filters) {
+  const parts = [];
+
+  if (filters.search) {
+    parts.push(`search contains "${ui.searchInput.value.trim()}"`);
+  }
+
+  if (filters.program) {
+    parts.push(`program is ${filters.program}`);
+  }
+
+  if (filters.awardType) {
+    parts.push(`award type is ${filters.awardType}`);
+  }
+
+  if (filters.phaseType) {
+    parts.push(`phase type is ${filters.phaseType}`);
+  }
+
+  if (filters.state) {
+    parts.push(`state is ${filters.state}`);
+  }
+
+  if (filters.minYear !== null && filters.maxYear !== null) {
+    parts.push(`start year is between ${filters.minYear} and ${filters.maxYear}`);
+  } else if (filters.minYear !== null) {
+    parts.push(`start year is ${filters.minYear} or later`);
+  } else if (filters.maxYear !== null) {
+    parts.push(`start year is ${filters.maxYear} or earlier`);
+  }
+
+  if (filters.minAward !== null) {
+    parts.push(`award amount is at least ${safeMoney(filters.minAward)}`);
+  }
+
+  if (!parts.length) {
+    return "No active filters (showing all records).";
+  }
+
+  return `Current filters: ${parts.join("; ")}.`;
+}
+
+function renderFilterSummaries(filters) {
+  const summary = buildHumanReadableFilterSummary(filters);
+  ui.companiesFilterSummary.textContent = summary;
+  ui.contractsFilterSummary.textContent = summary;
+}
+
 function aggregateCompanies(contracts) {
   const index = new Map();
 
@@ -538,7 +588,7 @@ function renderMetrics(filteredContracts, companies, states) {
 
 function renderCompaniesTable(companies) {
   const sortedCompanies = sortRows(companies, "companies");
-  const rows = sortedCompanies.slice(0, 100).map(
+  const rows = sortedCompanies.map(
     (company) => `
       <tr>
         <td>${company.companyName}</td>
@@ -603,6 +653,11 @@ function renderMap(stateRows) {
         `Total Obligation: ${compactMoney(state.totalObligation || 0)}`
     );
 
+    marker.on("click", () => {
+      ui.stateFilter.value = ui.stateFilter.value === code ? "" : code;
+      render();
+    });
+
     marker.addTo(appState.mapLayerGroup);
   });
 }
@@ -616,6 +671,7 @@ function render() {
   const states = aggregateStates(filteredContracts);
 
   renderMetrics(filteredContracts, companies, states);
+  renderFilterSummaries(filters);
   renderCompaniesTable(companies);
   renderContractsTable(filteredContracts);
   renderMap(states);
