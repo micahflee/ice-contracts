@@ -1,0 +1,12 @@
+{
+  "contractors_rows": 6885,
+  "contracts_rows": 1409,
+  "unique_contract_companies": 640,
+  "company_rollups_rows": 637,
+  "matched_company_rollups": 603,
+  "unmatched_company_rollups": 34,
+  "total_award_amount": 844599807.4299994,
+  "total_obligation_amount": 442609058.76999974,
+  "pop_start_min": "2004-04-01",
+  "pop_start_max": "2025-09-29"
+}

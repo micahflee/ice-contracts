@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DHS Contracts Explorer</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>DHS Contracts Explorer</h1>
+      <p>Search, filter, and visualize contractor and award data.</p>
+    </header>
+
+    <main class="layout">
+      <aside class="panel filters">
+        <h2>Filters</h2>
+
+        <label>
+          Search
+          <input id="searchInput" type="search" placeholder="Company, title, abstract, topic..." />
+        </label>
+
+        <label>
+          Program
+          <select id="programFilter">
+            <option value="">All</option>
+          </select>
+        </label>
+
+        <label>
+          Award Type
+          <select id="awardTypeFilter">
+            <option value="">All</option>
+          </select>
+        </label>
+
+        <label>
+          Phase Type
+          <select id="phaseTypeFilter">
+            <option value="">All</option>
+          </select>
+        </label>
+
+        <label>
+          State
+          <select id="stateFilter">
+            <option value="">All</option>
+          </select>
+        </label>
+
+        <label>
+          Start Year (min)
+          <input id="minYearFilter" type="number" min="2000" max="2100" step="1" />
+        </label>
+
+        <label>
+          Start Year (max)
+          <input id="maxYearFilter" type="number" min="2000" max="2100" step="1" />
+        </label>
+
+        <label>
+          Min Award Amount ($)
+          <input id="minAwardFilter" type="number" min="0" step="1000" />
+        </label>
+
+        <button id="resetFiltersBtn" type="button">Reset Filters</button>
+      </aside>
+
+      <section class="content">
+        <section class="panel metrics" id="metricsPanel"></section>
+
+        <section class="panel map-panel">
+          <div class="panel-header">
+            <h2>State Map</h2>
+            <small>Bubble size represents total award amount</small>
+          </div>
+          <div id="map"></div>
+        </section>
+
+        <section class="panel table-panel">
+          <div class="panel-header">
+            <h2>Top Companies (Filtered)</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Contracts</th>
+                  <th>Total Award</th>
+                  <th>Total Obligation</th>
+                </tr>
+              </thead>
+              <tbody id="companiesTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel table-panel">
+          <div class="panel-header">
+            <h2>Contracts (Filtered)</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Award ID</th>
+                  <th>Company</th>
+                  <th>Program</th>
+                  <th>Phase</th>
+                  <th>Award Type</th>
+                  <th>Start</th>
+                  <th>End</th>
+                  <th>Award</th>
+                  <th>State</th>
+                </tr>
+              </thead>
+              <tbody id="contractsTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,275 @@
+[
+  {
+    "stateCode": "CA",
+    "stateName": "California",
+    "contractCount": 115,
+    "totalAward": 32399396.98,
+    "totalObligation": 32682090.62
+  },
+  {
+    "stateCode": "MA",
+    "stateName": "Massachusetts",
+    "contractCount": 75,
+    "totalAward": 22976309.46,
+    "totalObligation": 24965957.57
+  },
+  {
+    "stateCode": "TX",
+    "stateName": "Texas",
+    "contractCount": 34,
+    "totalAward": 14378795.75,
+    "totalObligation": 15441148.149999999
+  },
+  {
+    "stateCode": "NY",
+    "stateName": "New York",
+    "contractCount": 32,
+    "totalAward": 13912061.49,
+    "totalObligation": 11637674.49
+  },
+  {
+    "stateCode": "VA",
+    "stateName": "Virginia",
+    "contractCount": 39,
+    "totalAward": 9385055.38,
+    "totalObligation": 9784692.049999999
+  },
+  {
+    "stateCode": "MD",
+    "stateName": "Maryland",
+    "contractCount": 25,
+    "totalAward": 7940466.45,
+    "totalObligation": 9540464.54
+  },
+  {
+    "stateCode": "WA",
+    "stateName": "Washington",
+    "contractCount": 14,
+    "totalAward": 6400891.83,
+    "totalObligation": 6400891.83
+  },
+  {
+    "stateCode": "AL",
+    "stateName": "Alabama",
+    "contractCount": 12,
+    "totalAward": 5360485.82,
+    "totalObligation": 5117661.54
+  },
+  {
+    "stateCode": "MI",
+    "stateName": "Michigan",
+    "contractCount": 10,
+    "totalAward": 3899150.89,
+    "totalObligation": 3899150.89
+  },
+  {
+    "stateCode": "FL",
+    "stateName": "Florida",
+    "contractCount": 11,
+    "totalAward": 3677480.76,
+    "totalObligation": 3677480.76
+  },
+  {
+    "stateCode": "AZ",
+    "stateName": "Arizona",
+    "contractCount": 12,
+    "totalAward": 3593716.67,
+    "totalObligation": 4343716.67
+  },
+  {
+    "stateCode": "CO",
+    "stateName": "Colorado",
+    "contractCount": 11,
+    "totalAward": 2808458.77,
+    "totalObligation": 2343581.83
+  },
+  {
+    "stateCode": "PA",
+    "stateName": "Pennsylvania",
+    "contractCount": 8,
+    "totalAward": 2800085.48,
+    "totalObligation": 2800085.48
+  },
+  {
+    "stateCode": "NM",
+    "stateName": "New Mexico",
+    "contractCount": 8,
+    "totalAward": 2741448.4699999997,
+    "totalObligation": 2741448.4699999997
+  },
+  {
+    "stateCode": "NC",
+    "stateName": "North Carolina",
+    "contractCount": 9,
+    "totalAward": 2421381.89,
+    "totalObligation": 2521371.88
+  },
+  {
+    "stateCode": "UT",
+    "stateName": "Utah",
+    "contractCount": 8,
+    "totalAward": 2341269.4299999997,
+    "totalObligation": 2341269.4299999997
+  },
+  {
+    "stateCode": "NJ",
+    "stateName": "New Jersey",
+    "contractCount": 9,
+    "totalAward": 2249878.8,
+    "totalObligation": 2249878.8
+  },
+  {
+    "stateCode": "CT",
+    "stateName": "Connecticut",
+    "contractCount": 9,
+    "totalAward": 2244094.48,
+    "totalObligation": 2244094.48
+  },
+  {
+    "stateCode": "MN",
+    "stateName": "Minnesota",
+    "contractCount": 9,
+    "totalAward": 2198836.25,
+    "totalObligation": 2198836.25
+  },
+  {
+    "stateCode": "MT",
+    "stateName": "Montana",
+    "contractCount": 4,
+    "totalAward": 2032294,
+    "totalObligation": 2032294
+  },
+  {
+    "stateCode": "RI",
+    "stateName": "Rhode Island",
+    "contractCount": 3,
+    "totalAward": 1595157.85,
+    "totalObligation": 199482
+  },
+  {
+    "stateCode": "NH",
+    "stateName": "New Hampshire",
+    "contractCount": 6,
+    "totalAward": 1403667.04,
+    "totalObligation": 1403667.04
+  },
+  {
+    "stateCode": "OR",
+    "stateName": "Oregon",
+    "contractCount": 4,
+    "totalAward": 1174750.32,
+    "totalObligation": 1174750.32
+  },
+  {
+    "stateCode": "IN",
+    "stateName": "Indiana",
+    "contractCount": 3,
+    "totalAward": 1042603.86,
+    "totalObligation": 1876770.5699999998
+  },
+  {
+    "stateCode": "HI",
+    "stateName": "Hawaii",
+    "contractCount": 3,
+    "totalAward": 949933,
+    "totalObligation": 949933
+  },
+  {
+    "stateCode": "OH",
+    "stateName": "Ohio",
+    "contractCount": 3,
+    "totalAward": 949610.4,
+    "totalObligation": 2449221.4
+  },
+  {
+    "stateCode": "MO",
+    "stateName": "Missouri",
+    "contractCount": 3,
+    "totalAward": 945581.27,
+    "totalObligation": 955568.27
+  },
+  {
+    "stateCode": "OK",
+    "stateName": "Oklahoma",
+    "contractCount": 2,
+    "totalAward": 850000,
+    "totalObligation": 850000
+  },
+  {
+    "stateCode": "NE",
+    "stateName": "Nebraska",
+    "contractCount": 2,
+    "totalAward": 849995,
+    "totalObligation": 1599995
+  },
+  {
+    "stateCode": "AK",
+    "stateName": "Alaska",
+    "contractCount": 1,
+    "totalAward": 823125.0,
+    "totalObligation": 823125.0
+  },
+  {
+    "stateCode": "DC",
+    "stateName": "District of Columbia",
+    "contractCount": 1,
+    "totalAward": 749988.0,
+    "totalObligation": 749988.0
+  },
+  {
+    "stateCode": "SC",
+    "stateName": "South Carolina",
+    "contractCount": 1,
+    "totalAward": 646414.54,
+    "totalObligation": 646414.54
+  },
+  {
+    "stateCode": "IL",
+    "stateName": "Illinois",
+    "contractCount": 4,
+    "totalAward": 435374.57,
+    "totalObligation": 435374.57
+  },
+  {
+    "stateCode": "WI",
+    "stateName": "Wisconsin",
+    "contractCount": 4,
+    "totalAward": 399993.94999999995,
+    "totalObligation": 399993.94999999995
+  },
+  {
+    "stateCode": "GA",
+    "stateName": "Georgia",
+    "contractCount": 2,
+    "totalAward": 199907.49,
+    "totalObligation": 199907.49
+  },
+  {
+    "stateCode": "KS",
+    "stateName": "Kansas",
+    "contractCount": 1,
+    "totalAward": 150000.0,
+    "totalObligation": 150000.0
+  },
+  {
+    "stateCode": "VT",
+    "stateName": "Vermont",
+    "contractCount": 1,
+    "totalAward": 99990.0,
+    "totalObligation": 99990.0
+  },
+  {
+    "stateCode": "KY",
+    "stateName": "Kentucky",
+    "contractCount": 1,
+    "totalAward": 99976.0,
+    "totalObligation": 99976.0
+  },
+  {
+    "stateCode": "LA",
+    "stateName": "Louisiana",
+    "contractCount": 1,
+    "totalAward": 99013.32,
+    "totalObligation": 99013.32
+  }
+]
