@@ -568,12 +568,14 @@ function showModal(title, bodyHtml) {
   ui.detailModalBody.innerHTML = bodyHtml;
   ui.detailModal.classList.remove("hidden");
   ui.detailModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
 }
 
 function hideModal() {
   ui.detailModal.classList.add("hidden");
   ui.detailModal.setAttribute("aria-hidden", "true");
   ui.detailModalBody.innerHTML = "";
+  document.body.style.overflow = "";
 }
 
 function renderCompanyContractsTable(companyContracts) {
@@ -690,19 +692,21 @@ async function renderCompanyModal(companyKey) {
     <h3 class="modal-section-title">Contracts Awarded</h3>
     ${renderCompanyContractsTable(contractsForCompany)}
 
-    <h3 class="modal-section-title">All Matched Contractor Record Data</h3>
-    ${
-      contractorRecords.length
-        ? contractorRecords
-            .map(
-              (record, idx) =>
-                `<h4 class="modal-section-title">Contractor Record ${idx + 1}</h4><pre class="json-block">${escapeHtml(
-                  JSON.stringify(record, null, 2)
-                )}</pre>`
-            )
-            .join("")
-        : '<p class="detail-value">No exact contractor record matched this company key.</p>'
-    }
+    <details class="json-disclosure">
+      <summary class="json-disclosure-summary"><span class="arrow">▾</span> All Matched Contractor Record Data (JSON)</summary>
+      ${
+        contractorRecords.length
+          ? contractorRecords
+              .map(
+                (record, idx) =>
+                  `<h4 class="modal-section-title">Contractor Record ${idx + 1}</h4><pre class="json-block">${escapeHtml(
+                    JSON.stringify(record, null, 2)
+                  )}</pre>`
+              )
+              .join("")
+          : '<p class="detail-value">No exact contractor record matched this company key.</p>'
+      }
+    </details>
   `;
 
   showModal(`Company Detail: ${displayName}`, bodyHtml);
@@ -750,8 +754,10 @@ function renderContractModal(awardId) {
   )}</button>
     </p>
 
-    <h3 class="modal-section-title">All Contract Field Data</h3>
-    <pre class="json-block">${escapeHtml(JSON.stringify(contract, null, 2))}</pre>
+    <details class="json-disclosure">
+      <summary class="json-disclosure-summary"><span class="arrow">▾</span> All Contract Field Data (JSON)</summary>
+      <pre class="json-block">${escapeHtml(JSON.stringify(contract, null, 2))}</pre>
+    </details>
   `;
 
   showModal(`Contract Detail: Award ${contract.awardId}`, bodyHtml);

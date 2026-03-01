@@ -15,57 +15,59 @@
 
     <main class="layout">
       <aside class="panel filters">
-        <h2>Filters</h2>
+        <details class="filters-disclosure">
+          <summary>Filters</summary>
 
-        <label>
-          Search
-          <input id="searchInput" type="search" placeholder="Company, title, abstract, topic..." />
-        </label>
+          <label>
+            Search
+            <input id="searchInput" type="search" placeholder="Company, title, abstract, topic..." />
+          </label>
 
-        <label>
-          Program
-          <select id="programFilter">
-            <option value="">All</option>
-          </select>
-        </label>
+          <label>
+            Program
+            <select id="programFilter">
+              <option value="">All</option>
+            </select>
+          </label>
 
-        <label>
-          Award Type
-          <select id="awardTypeFilter">
-            <option value="">All</option>
-          </select>
-        </label>
+          <label>
+            Award Type
+            <select id="awardTypeFilter">
+              <option value="">All</option>
+            </select>
+          </label>
 
-        <label>
-          Phase Type
-          <select id="phaseTypeFilter">
-            <option value="">All</option>
-          </select>
-        </label>
+          <label>
+            Phase Type
+            <select id="phaseTypeFilter">
+              <option value="">All</option>
+            </select>
+          </label>
 
-        <label>
-          State
-          <select id="stateFilter">
-            <option value="">All</option>
-          </select>
-        </label>
+          <label>
+            State
+            <select id="stateFilter">
+              <option value="">All</option>
+            </select>
+          </label>
 
-        <label>
-          Start Year (min)
-          <input id="minYearFilter" type="number" min="2000" max="2100" step="1" />
-        </label>
+          <label>
+            Start Year (min)
+            <input id="minYearFilter" type="number" min="2000" max="2100" step="1" />
+          </label>
 
-        <label>
-          Start Year (max)
-          <input id="maxYearFilter" type="number" min="2000" max="2100" step="1" />
-        </label>
+          <label>
+            Start Year (max)
+            <input id="maxYearFilter" type="number" min="2000" max="2100" step="1" />
+          </label>
 
-        <label>
-          Min Award Amount ($)
-          <input id="minAwardFilter" type="number" min="0" step="1000" />
-        </label>
+          <label>
+            Min Award Amount ($)
+            <input id="minAwardFilter" type="number" min="0" step="1000" />
+          </label>
 
-        <button id="resetFiltersBtn" type="button">Reset Filters</button>
+          <button id="resetFiltersBtn" type="button">Reset Filters</button>
+        </details>
       </aside>
 
       <section class="content">
@@ -84,8 +86,8 @@
             <h2>Companies</h2>
           </div>
           <p class="filter-summary" id="companiesFilterSummary"></p>
-          <div class="table-wrap">
-            <table>
+          <div class="table-wrap companies-table-wrap">
+            <table class="companies-table">
               <thead>
                 <tr>
                   <th data-table="companies" data-sort-key="companyName" data-label="Company">Company</th>
@@ -104,8 +106,8 @@
             <h2>Contracts</h2>
           </div>
           <p class="filter-summary" id="contractsFilterSummary"></p>
-          <div class="table-wrap">
-            <table>
+          <div class="table-wrap contracts-table-wrap">
+            <table class="contracts-table">
               <thead>
                 <tr>
                   <th data-table="contracts" data-sort-key="awardId" data-label="Award ID">Award ID</th>

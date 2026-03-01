@@ -8,10 +8,17 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   background: #f5f7fb;
   color: #1f2937;
+  text-rendering: optimizeLegibility;
 }
 
 .topbar {
@@ -28,6 +35,7 @@ body {
 .topbar p {
   margin: 0.25rem 0 0;
   color: #cbd5e1;
+  max-width: 70ch;
 }
 
 .layout {
@@ -35,13 +43,18 @@ body {
   grid-template-columns: 280px 1fr;
   gap: 1rem;
   padding: 1rem;
+  max-width: 1500px;
+  margin: 0 auto;
+  min-width: 0;
 }
 
 .panel {
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 0.85rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  min-width: 0;
 }
 
 .filters {
@@ -53,6 +66,36 @@ body {
 .filters h2 {
   margin-top: 0;
   font-size: 1.05rem;
+}
+
+.filters-disclosure {
+  min-width: 0;
+}
+
+.filters-disclosure summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1f2937;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.65rem;
+}
+
+.filters-disclosure summary::before {
+  content: "▸";
+  font-size: 0.85rem;
+  transition: transform 0.15s ease;
+}
+
+.filters-disclosure[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.filters-disclosure summary::-webkit-details-marker {
+  display: none;
 }
 
 .filters label {
@@ -67,10 +110,20 @@ body {
 .filters button {
   width: 100%;
   margin-top: 0.25rem;
-  padding: 0.48rem 0.55rem;
+  min-height: 2.6rem;
+  padding: 0.48rem 0.6rem;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   font: inherit;
+}
+
+.filters input:focus,
+.filters select:focus,
+.filters button:focus,
+.modal-close-btn:focus,
+.link-button:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
 }
 
 .filters button {
@@ -82,18 +135,24 @@ body {
 .content {
   display: grid;
   gap: 1rem;
+  min-width: 0;
+}
+
+.map-panel {
+  min-width: 0;
+  overflow: hidden;
 }
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(4, minmax(120px, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 0.6rem;
 }
 
 .metric {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 0.6rem;
+  padding: 0.65rem;
 }
 
 .metric .label {
@@ -131,28 +190,40 @@ body {
 
 #map {
   width: 100%;
-  height: 360px;
+  height: 420px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
+  max-width: 100%;
 }
 
 .table-wrap {
-  max-height: 360px;
+  max-height: 420px;
   overflow: auto;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
+  -webkit-overflow-scrolling: touch;
+  min-width: 0;
 }
 
 table {
   width: 100%;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: 0.84rem;
+}
+
+.companies-table {
+  min-width: 620px;
+}
+
+.contracts-table {
+  min-width: 1040px;
 }
 
 th,
 td {
   text-align: left;
-  padding: 0.45rem 0.5rem;
+  padding: 0.5rem 0.55rem;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: top;
 }
@@ -176,6 +247,10 @@ th.sortable:focus {
 
 tbody tr:hover {
   background: #f8fafc;
+}
+
+tbody tr:nth-child(even) {
+  background: #fcfdff;
 }
 
 .link-button {
@@ -296,7 +371,115 @@ tbody tr:hover {
   padding: 0.6rem;
 }
 
+.json-disclosure {
+  margin-top: 0.65rem;
+}
+
+.json-disclosure-summary {
+  list-style: none;
+  cursor: pointer;
+  color: #1f2937;
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.45rem;
+}
+
+.json-disclosure-summary::-webkit-details-marker {
+  display: none;
+}
+
+.json-disclosure-summary .arrow {
+  transition: transform 0.15s ease;
+  font-size: 0.85rem;
+}
+
+.json-disclosure[open] .json-disclosure-summary .arrow {
+  transform: rotate(180deg);
+}
+
 @media (max-width: 760px) {
+  .topbar {
+    padding: 0.9rem 0.9rem;
+  }
+
+  .topbar h1 {
+    font-size: 1.12rem;
+  }
+
+  .topbar p {
+    font-size: 0.8rem;
+  }
+
+  .layout {
+    padding: 0.55rem;
+    gap: 0.65rem;
+  }
+
+  .panel {
+    padding: 0.7rem;
+    border-radius: 10px;
+  }
+
+  .panel-header {
+    margin-bottom: 0.35rem;
+  }
+
+  .panel-header h2 {
+    font-size: 1rem;
+  }
+
+  .metrics {
+    grid-template-columns: repeat(2, minmax(110px, 1fr));
+  }
+
+  .metric .label {
+    font-size: 0.7rem;
+  }
+
+  .metric .value {
+    font-size: 0.98rem;
+  }
+
+  #map {
+    height: 300px;
+  }
+
+  .table-wrap {
+    max-height: 320px;
+  }
+
+  th,
+  td {
+    font-size: 0.82rem;
+    padding: 0.46rem 0.48rem;
+  }
+
+  .modal {
+    place-items: stretch;
+  }
+
+  .modal-content {
+    width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+
+  .modal-header {
+    padding: 0.7rem 0.8rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1rem;
+  }
+
+  .modal-body {
+    padding: 0.7rem 0.8rem 1rem;
+  }
+
   .detail-grid {
     grid-template-columns: 1fr;
   }
